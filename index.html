@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calcolo Multe per veicoli (Caso D13 1.2.18)</title>
+    <style>
+        :root {
+            --primary: #1F4E79; 
+            --yellow-bg: #FFF2CC; 
+            --yellow-border: #D6B656;
+            --bg-color: #F4F7F6;
+            --border: #DEE2E6;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: #333;
+            line-height: 1.5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: #FFF;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            font-size: 1.6rem;
+        }
+        h2 {
+            font-size: 1.15rem;
+            color: var(--primary);
+            border-bottom: 1px solid #EEE;
+            padding-bottom: 8px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        
+        .form-row { display: flex; align-items: center; margin-bottom: 12px; }
+        .form-row label { flex: 1; min-width: 320px; font-weight: 500; }
+        .input-wrapper { flex: 1; max-width: 300px; position: relative; display: flex; align-items: center; }
+        .input-wrapper input, .input-wrapper select {
+            width: 100%; padding: 10px; border: 1px solid var(--yellow-border);
+            border-radius: 4px; font-size: 1rem; font-family: inherit; box-sizing: border-box;
+        }
+        .input-yellow { background-color: var(--yellow-bg) !important; font-weight: bold; color: #000; }
+        .input-yellow:focus { outline: none; box-shadow: 0 0 0 3px rgba(214, 182, 86, 0.3); }
+        
+        .text-right { text-align: right; }
+        .fw-bold { font-weight: bold; }
+        
+        .has-percent { padding-right: 35px !important; }
+        .percent-sign { position: absolute; right: 12px; font-weight: bold; color: #333; pointer-events: none; }
+        
+        .input-green {
+            border: 2px solid #27AE60 !important; border-radius: 4px; width: 120px;
+            padding: 8px; font-weight: bold; font-size: 1rem; text-align: right; box-sizing: border-box;
+        }
+
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: auto; }
+        th, td { border: 1px solid var(--border); padding: 12px; vertical-align: middle; }
+        th { background-color: #F1F3F5; color: var(--primary); text-align: left; }
+
+        .btn-print {
+            display: block; width: 100%; max-width: 350px; margin: 40px auto 10px auto;
+            background-color: var(--primary); color: white; border: none; padding: 15px;
+            font-size: 1.1rem; font-weight: bold; border-radius: 6px; cursor: pointer; text-align: center;
+        }
+        .btn-print:hover { background-color: #112d47; }
+
+        @media print {
+            @page { size: A4 portrait; margin: 1.2cm; }
+            body { background: #FFF; padding: 0; margin: 0; font-size: 10pt; }
+            .container { box-shadow: none; border: none; padding: 0; max-width: 100%; width: 100%; }
+            .btn-print { display: none !important; }
+            .table-responsive { overflow: visible !important; }
+            table { table-layout: fixed !important; width: 100% !important; word-wrap: break-word; }
+            th, td { border: 1px solid #000 !important; padding: 8px 6px !important; font-size: 9.5pt !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .input-wrapper input, .input-wrapper select { border: 1px solid #CCC !important; background: transparent !important; padding: 6px; }
+            .input-yellow { background-color: #FFF2CC !important; border: 1px solid #D6B656 !important; }
+            .input-green { border: 2px solid #27AE60 !important; }
+            th { background-color: #E9ECEF !important; }
+        }
+        @media (max-width: 600px) {
+            .form-row { flex-direction: column; align-items: stretch; }
+            .form-row label { margin-bottom: 5px; }
+            .input-wrapper { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Calcolo Multe per veicoli (Caso D13 1.2.18)</h1>
+
+    <!-- SEZIONE 1 -->
+    <h2>1. DATI DEL CONTRIBUENTE E VEICOLO</h2>
+    <div class="form-row">
+        <label>Valore da euro tax [Cella B3]</label>
+        <div class="input-wrapper">
+            <!-- Rimosso il modificatore forzato, iOS ora è felice! -->
+            <input type="text" inputmode="decimal" id="eurotax" class="input-yellow text-right" value="40000.00" autocomplete="off" autocorrect="off" spellcheck="false" oninput="calcDaEurotax()">
+        </div>
+    </div>
+    <div class="form-row">
+        <label>Valore dell'autoveicolo (CHF) <br><small>(IVA e ImpAuto scorporata) [Cella B4]</small></label>
+        <div class="input-wrapper">
+            <input type="text" inputmode="decimal" id="b4" class="input-yellow text-right" value="35579.59" autocomplete="off" autocorrect="off" spellcheck="false" oninput="calcDaB4()">
+        </div>
+    </div>
+    <div class="form-row">
+        <label>Aliquota Imposta Autoveicoli [Cella B5]</label>
+        <div class="input-wrapper">
+            <input type="text" inputmode="decimal" id="b5" class="input-yellow text-right has-percent" value="4.0" autocomplete="off" autocorrect="off" spellcheck="false" oninput="calcola()">
+            <span class="percent-sign">%</span>
+        </div>
+    </div>
+    <div class="form-row">
+        <label>Aliquota IVA [Cella B6]</label>
+        <div class="input-wrapper">
+            <input type="text" inputmode="decimal" id="b6" class="input-yellow text-right has-percent" value="8.10" autocomplete="off" autocorrect="off" spellcheck="false" oninput="calcola()">
+            <span class="percent-sign">%</span>
+        </div>
+    </div>
+    <div class="form-row" style="margin-top: 10px;">
+        <label>Accordo Procedura Semplificata? [Cella B7]</label>
+        <div class="input-wrapper">
+            <select id="b7" class="input-yellow" onchange="calcola()">
+                <option value="SI" selected>SI</option>
+                <option value="NO">NO</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-row">
+        <label>Tipo di violazione (se ordinaria) [Cella B8]</label>
+        <div class="input-wrapper">
+            <select id="b8" class="input-yellow" onchange="calcola()">
+                <option value="Negligenza" selected>Negligenza</option>
+                <option value="Intenzione">Intenzione</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- SEZIONE 2 -->
+    <h2>2. CALCOLO AUTOMATICO TRIBUTI</h2>
+    <div class="table-responsive">
+        <table>
+            <colgroup>
+                <col style="width: 70%;">
+                <col style="width: 30%;">
+            </colgroup>
+            <tr>
+                <td>Imposta sugli autoveicoli (CHF)</td>
+                <td id="out_imposta" class="text-right fw-bold"></td>
+            </tr>
+            <tr>
+                <td>altre tasse 13.20A [Cella B12]</td>
+                <td class="text-right" style="padding: 6px 12px; background: #FFF;">
+                    <input type="text" inputmode="decimal" id="b12" class="input-green" value="20.00" autocomplete="off" autocorrect="off" spellcheck="false" oninput="calcola()">
+                </td>
+            </tr>
+            <tr>
+                <td>Base imponibile IVA (CHF)</td>
+                <td id="out_base" class="text-right fw-bold"></td>
+            </tr>
+            <tr>
+                <td>IVA elusa (CHF)</td>
+                <td id="out_iva" class="text-right fw-bold"></td>
+            </tr>
+            <tr style="background-color: #F8F9FA;">
+                <td class="fw-bold">Totale Tributi Elusi (Imposta + IVA)</td>
+                <td id="out_totale" class="text-right fw-bold" style="color: #D35400;"></td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- SEZIONE 3 -->
+    <h2>3. DETTAGLIO VERDETTO E SANZIONI</h2>
+    <div class="table-responsive">
+        <table>
+            <colgroup>
+                <col style="width: 40%;">
+                <col style="width: 20%;">
+                <col style="width: 20%;">
+                <col style="width: 20%;">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>Tipo Procedura / Scenario</th>
+                    <th class="text-right">Sanzione / Multa</th>
+                    <th class="text-right">Spese / Tassa (CHF)</th>
+                    <th class="text-right">Totale (CHF)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Procedura Semplificata (Se il contribuente ACCETTA)</td>
+                    <td id="dppa_m" class="text-right"></td>
+                    <td id="dppa_t" class="text-right"></td>
+                    <td id="dppa_tot" class="text-right fw-bold"></td>
+                </tr>
+                <tr>
+                    <td>Procedura Ordinaria (Se il contribuente RIFIUTA)</td>
+                    <td id="dppo_m" class="text-right"></td>
+                    <td id="dppo_t" class="text-right"></td>
+                    <td id="dppo_tot" class="text-right fw-bold"></td>
+                </tr>
+                <tr style="background-color: #E8F5E9; border-top: 2px solid #27AE60;">
+                    <td class="fw-bold" style="color: #2E7D32;">IMPORTO DA APPLICARE:</td>
+                    <td id="final_m" class="text-right fw-bold" style="color: #2E7D32;"></td>
+                    <td id="final_t" class="text-right fw-bold" style="color: #2E7D32;"></td>
+                    <td id="final_tot" class="text-right fw-bold" style="color: #2E7D32; font-size: 1.1rem;"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pulsante Stampa diretto, senza ritardi -->
+    <button class="btn-print" onclick="window.print()">🖨 Stampa Report / Salva PDF</button>
+
+</div>
+
+<script>
+    // Tabelle scaglioni (invariate)
+    const multaTable = [
+        { limit: 50, int_m: 50, int_t: 60, neg_m: 50, neg_t: 60 },
+        { limit: 100, int_m: 150, int_t: 70, neg_m: 100, neg_t: 60 },
+        { limit: 150, int_m: 200, int_t: 70, neg_m: 150, neg_t: 70 },
+        { limit: 200, int_m: 300, int_t: 80, neg_m: 200, neg_t: 70 },
+        { limit: 250, int_m: 400, int_t: 90, neg_m: 230, neg_t: 80 },
+        { limit: 300, int_m: 500, int_t: 100, neg_m: 260, neg_t: 80 },
+        { limit: 350, int_m: 600, int_t: 120, neg_m: 290, neg_t: 80 },
+        { limit: 400, int_m: 650, int_t: 140, neg_m: 320, neg_t: 90 },
+        { limit: 500, int_m: 700, int_t: 140, neg_m: 350, neg_t: 90 },
+        { limit: 600, int_m: 750, int_t: 160, neg_m: 380, neg_t: 90 },
+        { limit: 700, int_m: 800, int_t: 160, neg_m: 410, neg_t: 100 },
+        { limit: 800, int_m: 850, int_t: 180, neg_m: 440, neg_t: 100 },
+        { limit: 900, int_m: 900, int_t: 180, neg_m: 470, neg_t: 100 },
+        { limit: 1000, int_m: 950, int_t: 200, neg_m: 500, neg_t: 100 },
+        { limit: 1100, int_m: 1000, int_t: 200, neg_m: 550, neg_t: 120 },
+        { limit: 1200, int_m: 1100, int_t: 300, neg_m: 600, neg_t: 120 },
+        { limit: 1300, int_m: 1200, int_t: 300, neg_m: 650, neg_t: 140 },
+        { limit: 1400, int_m: 1300, int_t: 300, neg_m: 700, neg_t: 140 },
+        { limit: 1500, int_m: 1400, int_t: 300, neg_m: 750, neg_t: 160 },
+        { limit: 1600, int_m: 1500, int_t: 300, neg_m: 800, neg_t: 160 },
+        { limit: 1700, int_m: 1600, int_t: 300, neg_m: 850, neg_t: 180 },
+        { limit: 1800, int_m: 1700, int_t: 300, neg_m: 900, neg_t: 180 },
+        { limit: 1900, int_m: 1800, int_t: 300, neg_m: 950, neg_t: 200 },
+        { limit: 2000, int_m: 1900, int_t: 300, neg_m: 1000, neg_t: 200 }
+    ];
+
+    const tassaTable = [
+        { limit: 100, tassa: 60 }, { limit: 200, tassa: 70 }, { limit: 300, tassa: 80 },
+        { limit: 400, tassa: 90 }, { limit: 500, tassa: 100 }, { limit: 600, tassa: 120 },
+        { limit: 700, tassa: 140 }, { limit: 800, tassa: 160 }, { limit: 900, tassa: 180 },
+        { limit: 1000, tassa: 200 }, { limit: 2000, tassa: 300 }, { limit: 3000, tassa: 400 },
+        { limit: 4000, tassa: 500 }, { limit: 5000, tassa: 600 }, { limit: 6000, tassa: 700 },
+        { limit: 7000, tassa: 800 }, { limit: 8000, tassa: 900 }, { limit: 9000, tassa: 1000 },
+        { limit: 10000, tassa: 1100 }, { limit: 11000, tassa: 1200 }, { limit: 12000, tassa: 1300 },
+        { limit: 13000, tassa: 1400 }, { limit: 14000, tassa: 1500 }, { limit: 15000, tassa: 1600 },
+        { limit: 16000, tassa: 1700 }, { limit: 17000, tassa: 1800 }, { limit: 18000, tassa: 1900 },
+        { limit: 19000, tassa: 2000 }, { limit: 20000, tassa: 2200 }, { limit: 25000, tassa: 2400 },
+        { limit: 30000, tassa: 2600 }, { limit: 35000, tassa: 2800 }, { limit: 40000, tassa: 3000 },
+        { limit: 45000, tassa: 3200 }, { limit: 50000, tassa: 3400 }, { limit: Infinity, tassa: 3400 }
+    ];
+
+    function getTassa(multa) {
+        for (let i = 0; i < tassaTable.length; i++) {
+            if (multa <= tassaTable[i].limit) return tassaTable[i].tassa;
+        }
+        return 3400;
+    }
+
+    // NUOVO SISTEMA: Legge il valore e fa la pulizia "dietro le quinte" senza bloccare iOS
+    function leggiNumeroSafe(idCampo) {
+        let campo = document.getElementById(idCampo);
+        if (!campo) return 0;
+        let valore = campo.value;
+        if (!valore) return 0;
+        
+        // Pulizia silenziosa in memoria
+        valore = valore.replace(/['\s\u2018\u2019]/g, ''); // Toglie apostrofi e spazi
+        valore = valore.replace(/,/g, '.'); // Cambia la virgola in punto
+        valore = valore.replace(/[^0-9.-]/g, ''); // Lascia solo numeri e punti
+
+        let numero = parseFloat(valore);
+        return isNaN(numero) ? 0 : numero;
+    }
+
+    function formatCHF(val) {
+        if (typeof val === 'string') return val;
+        if (isNaN(val)) return "0.00";
+        let parts = Number(val).toFixed(2).split(".");
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+        return parts.join(".");
+    }
+
+    function round5Rappen(val) {
+        return Math.round(val * 20) / 20;
+    }
+
+    function calcDaEurotax() {
+        let euro = leggiNumeroSafe("eurotax");
+        if (euro > 0) {
+            let netto = euro / 1.12424; 
+            document.getElementById("b4").value = netto.toFixed(2);
+            calcola(); 
+        }
+    }
+    
+    function calcDaB4() {
+        let netto = leggiNumeroSafe("b4");
+        if (netto > 0) {
+            let lordo = netto * 1.12424;
+            document.getElementById("eurotax").value = lordo.toFixed(2);
+            calcola();
+        }
+    }
+
+    // --- MOTORE PRINCIPALE DI CALCOLO ---
+    function calcola() {
+        let b4 = leggiNumeroSafe("b4");
+        let b5 = leggiNumeroSafe("b5") / 100;
+        let b6 = leggiNumeroSafe("b6") / 100;
+        let b12 = leggiNumeroSafe("b12");
+        
+        let b7 = document.getElementById("b7").value; 
+        let b8 = document.getElementById("b8").value; 
+
+        // 1. CALCOLO TRIBUTI ELUSI
+        let base_imposta = b4 + b12; 
+        let imposta = round5Rappen(base_imposta * b5);
+        
+        let base_iva = Math.floor(b4 + imposta + b12); 
+        let iva = round5Rappen(base_iva * b6);
+        
+        let tributi_base = imposta + iva + b12; 
+        let tributi = Math.round(tributi_base * 100) / 100;
+
+        document.getElementById("out_imposta").innerText = formatCHF(imposta);
+        document.getElementById("out_base").innerText = formatCHF(base_iva);
+        document.getElementById("out_iva").innerText = formatCHF(iva);
+        document.getElementById("out_totale").innerText = formatCHF(tributi);
+
+        let dppa_multa = 0, dppa_tassa = 0;
+        let dppo_multa = 0, dppo_tassa = 0;
+        let semplificataPossibile = true;
+
+        // 2. CALCOLO DELLA MULTA
+        if (tributi <= 2000.00) {
+            let row = multaTable.find(r => tributi <= r.limit);
+            if (!row) row = multaTable[multaTable.length - 1];
+
+            if (b8 === 'Negligenza') {
+                dppa_multa = row.neg_m;
+                dppo_multa = row.neg_m;
+                dppo_tassa = row.neg_t;
+            } else {
+                dppa_multa = row.int_m;
+                dppo_multa = row.int_m;
+                dppo_tassa = row.int_t;
+            }
+        } else {
+            let base_multa = (b8 === 'Negligenza') ? (tributi / 2) : tributi;
+            let multa_calcolata = Math.floor(base_multa / 100) * 100;
+            
+            dppa_multa = multa_calcolata;
+            dppo_multa = multa_calcolata; 
+            dppo_tassa = getTassa(dppo_multa);
+        }
+        
+        dppa_tassa = 0; // La semplificata ha sempre spese a 0.00
+
+        // 3. CONTROLLO FINALE: LA MULTA CALCOLATA SUPERA I 2000 CHF?
+        if (dppa_multa > 2000) {
+            semplificataPossibile = false; 
+            dppa_multa = "Procedura semplificata non possibile";
+            dppa_tassa = 0; 
+        }
+
+        // 4. SCRITTURA NELLA TABELLA 
+        let dppa_tot = semplificataPossibile ? (dppa_multa + dppa_tassa) : "Procedura semplificata non possibile";
+        let dppo_tot = dppo_multa + dppo_tassa;
+
+        document.getElementById("dppa_m").innerText = formatCHF(dppa_multa);
+        document.getElementById("dppa_t").innerText = formatCHF(dppa_tassa);
+        document.getElementById("dppa_tot").innerText = formatCHF(dppa_tot);
+
+        document.getElementById("dppo_m").innerText = formatCHF(dppo_multa);
+        document.getElementById("dppo_t").innerText = formatCHF(dppo_tassa);
+        document.getElementById("dppo_tot").innerText = formatCHF(dppo_tot);
+
+        // 5. APPLICAZIONE (RIGA VERDE)
+        let final_m, final_t, final_tot;
+        
+        if (b7 === 'SI' && semplificataPossibile) {
+            final_m = dppa_multa;
+            final_t = dppa_tassa;
+            final_tot = final_m + final_t;
+        } else { 
+            final_m = dppo_multa;
+            final_t = dppo_tassa;
+            final_tot = dppo_tot;
+        }
+
+        document.getElementById("final_m").innerText = formatCHF(final_m);
+        document.getElementById("final_t").innerText = formatCHF(final_t);
+        document.getElementById("final_tot").innerText = formatCHF(final_tot);
+    }
+
+    // Avvia il calcolo appena apri la pagina
+    window.onload = function() {
+        calcDaEurotax(); 
+    };
+</script>
+</body>
+</html>
