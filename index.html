@@ -107,34 +107,33 @@
     <!-- SEZIONE 1 -->
     <h2>1. DATI DEL CONTRIBUENTE E VEICOLO</h2>
     <div class="form-row">
-        <label>Valore da euro tax [Cella B3]</label>
+        <label>Valore da euro tax</label>
         <div class="input-wrapper">
-            <!-- Rimosso il modificatore forzato, iOS ora è felice! -->
-            <input type="text" inputmode="decimal" id="eurotax" class="input-yellow text-right" value="40000.00" autocomplete="off" autocorrect="off" spellcheck="false" oninput="calcDaEurotax()">
+            <input type="text" inputmode="decimal" id="eurotax" class="input-yellow text-right" value="40000.00" autocomplete="off" autocorrect="off" spellcheck="false" oninput="pulisciInput(this); calcDaEurotax()">
         </div>
     </div>
     <div class="form-row">
-        <label>Valore dell'autoveicolo (CHF) <br><small>(IVA e ImpAuto scorporata) [Cella B4]</small></label>
+        <label>Valore dell'autoveicolo (CHF) <br><small>(IVA e ImpAuto scorporata)</small></label>
         <div class="input-wrapper">
-            <input type="text" inputmode="decimal" id="b4" class="input-yellow text-right" value="35579.59" autocomplete="off" autocorrect="off" spellcheck="false" oninput="calcDaB4()">
+            <input type="text" inputmode="decimal" id="b4" class="input-yellow text-right" value="35579.59" autocomplete="off" autocorrect="off" spellcheck="false" oninput="pulisciInput(this); calcDaB4()">
         </div>
     </div>
     <div class="form-row">
-        <label>Aliquota Imposta Autoveicoli [Cella B5]</label>
+        <label>Aliquota Imposta Autoveicoli</label>
         <div class="input-wrapper">
-            <input type="text" inputmode="decimal" id="b5" class="input-yellow text-right has-percent" value="4.0" autocomplete="off" autocorrect="off" spellcheck="false" oninput="calcola()">
+            <input type="text" inputmode="decimal" id="b5" class="input-yellow text-right has-percent" value="4.0" autocomplete="off" autocorrect="off" spellcheck="false" oninput="pulisciInput(this); calcola()">
             <span class="percent-sign">%</span>
         </div>
     </div>
     <div class="form-row">
-        <label>Aliquota IVA [Cella B6]</label>
+        <label>Aliquota IVA</label>
         <div class="input-wrapper">
-            <input type="text" inputmode="decimal" id="b6" class="input-yellow text-right has-percent" value="8.10" autocomplete="off" autocorrect="off" spellcheck="false" oninput="calcola()">
+            <input type="text" inputmode="decimal" id="b6" class="input-yellow text-right has-percent" value="8.10" autocomplete="off" autocorrect="off" spellcheck="false" oninput="pulisciInput(this); calcola()">
             <span class="percent-sign">%</span>
         </div>
     </div>
     <div class="form-row" style="margin-top: 10px;">
-        <label>Accordo Procedura Semplificata? [Cella B7]</label>
+        <label>Accordo Procedura Semplificata?</label>
         <div class="input-wrapper">
             <select id="b7" class="input-yellow" onchange="calcola()">
                 <option value="SI" selected>SI</option>
@@ -143,7 +142,7 @@
         </div>
     </div>
     <div class="form-row">
-        <label>Tipo di violazione (se ordinaria) [Cella B8]</label>
+        <label>Tipo di violazione (se ordinaria)</label>
         <div class="input-wrapper">
             <select id="b8" class="input-yellow" onchange="calcola()">
                 <option value="Negligenza" selected>Negligenza</option>
@@ -165,9 +164,9 @@
                 <td id="out_imposta" class="text-right fw-bold"></td>
             </tr>
             <tr>
-                <td>altre tasse 13.20A [Cella B12]</td>
+                <td>Altre tasse 13.20A</td>
                 <td class="text-right" style="padding: 6px 12px; background: #FFF;">
-                    <input type="text" inputmode="decimal" id="b12" class="input-green" value="20.00" autocomplete="off" autocorrect="off" spellcheck="false" oninput="calcola()">
+                    <input type="text" inputmode="decimal" id="b12" class="input-green" value="20.00" autocomplete="off" autocorrect="off" spellcheck="false" oninput="pulisciInput(this); calcola()">
                 </td>
             </tr>
             <tr>
@@ -226,13 +225,12 @@
         </table>
     </div>
 
-    <!-- Pulsante Stampa diretto, senza ritardi -->
-    <button class="btn-print" onclick="window.print()">🖨 Stampa Report / Salva PDF</button>
+    <button class="btn-print" onclick="stampaReportiOS()">🖨 Stampa Report / Salva PDF</button>
 
 </div>
 
 <script>
-    // Tabelle scaglioni (invariate)
+    // Tabelle scaglioni
     const multaTable = [
         { limit: 50, int_m: 50, int_t: 60, neg_m: 50, neg_t: 60 },
         { limit: 100, int_m: 150, int_t: 70, neg_m: 100, neg_t: 60 },
@@ -282,17 +280,29 @@
         return 3400;
     }
 
-    // NUOVO SISTEMA: Legge il valore e fa la pulizia "dietro le quinte" senza bloccare iOS
+    // Lettura input ripuliti per iOS
+    function pulisciInput(elemento) {
+        let valore = elemento.value;
+        valore = valore.replace(',', '.');
+        valore = valore.replace(/[^0-9.]/g, '');
+        let parti = valore.split('.');
+        if (parti.length > 2) {
+            valore = parti[0] + '.' + parti.slice(1).join('');
+        }
+        if (elemento.value !== valore) {
+            elemento.value = valore;
+        }
+    }
+
     function leggiNumeroSafe(idCampo) {
         let campo = document.getElementById(idCampo);
         if (!campo) return 0;
         let valore = campo.value;
         if (!valore) return 0;
         
-        // Pulizia silenziosa in memoria
-        valore = valore.replace(/['\s\u2018\u2019]/g, ''); // Toglie apostrofi e spazi
-        valore = valore.replace(/,/g, '.'); // Cambia la virgola in punto
-        valore = valore.replace(/[^0-9.-]/g, ''); // Lascia solo numeri e punti
+        valore = valore.replace(/['\s\u2018\u2019]/g, '');
+        valore = valore.replace(/,/g, '.');
+        valore = valore.replace(/[^0-9.]/g, '');
 
         let numero = parseFloat(valore);
         return isNaN(numero) ? 0 : numero;
@@ -308,6 +318,10 @@
 
     function round5Rappen(val) {
         return Math.round(val * 20) / 20;
+    }
+
+    function stampaReportiOS() {
+        setTimeout(function() { window.print(); }, 150);
     }
 
     function calcDaEurotax() {
@@ -357,7 +371,7 @@
         let dppo_multa = 0, dppo_tassa = 0;
         let semplificataPossibile = true;
 
-        // 2. CALCOLO DELLA MULTA
+        // 2. CALCOLO DELLA MULTA (indipendente dalla procedura, prima del blocco)
         if (tributi <= 2000.00) {
             let row = multaTable.find(r => tributi <= r.limit);
             if (!row) row = multaTable[multaTable.length - 1];
@@ -419,7 +433,6 @@
         document.getElementById("final_tot").innerText = formatCHF(final_tot);
     }
 
-    // Avvia il calcolo appena apri la pagina
     window.onload = function() {
         calcDaEurotax(); 
     };
