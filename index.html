@@ -230,7 +230,6 @@
 </div>
 
 <script>
-    // Tabelle scaglioni
     const multaTable = [
         { limit: 50, int_m: 50, int_t: 60, neg_m: 50, neg_t: 60 },
         { limit: 100, int_m: 150, int_t: 70, neg_m: 100, neg_t: 60 },
@@ -280,7 +279,6 @@
         return 3400;
     }
 
-    // Lettura input ripuliti per iOS
     function pulisciInput(elemento) {
         let valore = elemento.value;
         valore = valore.replace(',', '.');
@@ -296,15 +294,8 @@
 
     function leggiNumeroSafe(idCampo) {
         let campo = document.getElementById(idCampo);
-        if (!campo) return 0;
-        let valore = campo.value;
-        if (!valore) return 0;
-        
-        valore = valore.replace(/['\s\u2018\u2019]/g, '');
-        valore = valore.replace(/,/g, '.');
-        valore = valore.replace(/[^0-9.]/g, '');
-
-        let numero = parseFloat(valore);
+        if (!campo || !campo.value) return 0;
+        let numero = parseFloat(campo.value);
         return isNaN(numero) ? 0 : numero;
     }
 
@@ -342,7 +333,6 @@
         }
     }
 
-    // --- MOTORE PRINCIPALE DI CALCOLO ---
     function calcola() {
         let b4 = leggiNumeroSafe("b4");
         let b5 = leggiNumeroSafe("b5") / 100;
@@ -352,7 +342,6 @@
         let b7 = document.getElementById("b7").value; 
         let b8 = document.getElementById("b8").value; 
 
-        // 1. CALCOLO TRIBUTI ELUSI
         let base_imposta = b4 + b12; 
         let imposta = round5Rappen(base_imposta * b5);
         
@@ -371,7 +360,6 @@
         let dppo_multa = 0, dppo_tassa = 0;
         let semplificataPossibile = true;
 
-        // 2. CALCOLO DELLA MULTA (indipendente dalla procedura, prima del blocco)
         if (tributi <= 2000.00) {
             let row = multaTable.find(r => tributi <= r.limit);
             if (!row) row = multaTable[multaTable.length - 1];
@@ -394,16 +382,14 @@
             dppo_tassa = getTassa(dppo_multa);
         }
         
-        dppa_tassa = 0; // La semplificata ha sempre spese a 0.00
+        dppa_tassa = 0;
 
-        // 3. CONTROLLO FINALE: LA MULTA CALCOLATA SUPERA I 2000 CHF?
         if (dppa_multa > 2000) {
             semplificataPossibile = false; 
             dppa_multa = "Procedura semplificata non possibile";
             dppa_tassa = 0; 
         }
 
-        // 4. SCRITTURA NELLA TABELLA 
         let dppa_tot = semplificataPossibile ? (dppa_multa + dppa_tassa) : "Procedura semplificata non possibile";
         let dppo_tot = dppo_multa + dppo_tassa;
 
@@ -415,7 +401,6 @@
         document.getElementById("dppo_t").innerText = formatCHF(dppo_tassa);
         document.getElementById("dppo_tot").innerText = formatCHF(dppo_tot);
 
-        // 5. APPLICAZIONE (RIGA VERDE)
         let final_m, final_t, final_tot;
         
         if (b7 === 'SI' && semplificataPossibile) {
