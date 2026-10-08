@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calcolo trattamento  veicoli caso D13 1.2.18</title>
+    <title>Calcolo trattamento veicoli caso D13 1.2.18</title>
     <style>
         :root {
             --primary: #1F4E79; 
@@ -78,9 +78,18 @@
         }
         .btn-print:hover { background-color: #112d47; }
 
+       /* INIZIO MODIFICHE PER LA STAMPA */
        @media print {
-            @page { size: A4 portrait; margin: 1.2cm; }
-            body { background: #FFF; padding: 0; margin: 0; font-size: 10pt; }
+            @page { 
+                size: A4 portrait; 
+                margin: 0; /* Impostare a 0 rimuove URL, data e numeri di pagina del browser */
+            }
+            body { 
+                background: #FFF; 
+                padding: 1.5cm; /* Aggiungiamo spazio interno per non far toccare il testo sui bordi del foglio */
+                margin: 0; 
+                font-size: 10pt; 
+            }
             .container { box-shadow: none; border: none; padding: 0; max-width: 100%; width: 100%; }
             .btn-print { display: none !important; }
             .table-responsive { overflow: visible !important; }
@@ -92,6 +101,8 @@
             .input-green { border: 2px solid #27AE60 !important; }
             th { background-color: #E9ECEF !important; }
         }
+        /* FINE MODIFICHE PER LA STAMPA */
+        
         @media (max-width: 600px) {
             .form-row { flex-direction: column; align-items: stretch; }
             .form-row label { margin-bottom: 5px; }
