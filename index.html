@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calcolo Multe per veicoli (Caso D13 1.2.18)</title>
+    <title>Calcolo trattamento  veicoli caso D13 1.2.18</title>
     <style>
         :root {
             --primary: #1F4E79; 
@@ -142,7 +142,7 @@
         </div>
     </div>
     <div class="form-row">
-        <label>Tipo di violazione (se ordinaria)</label>
+        <label>Tipo di procedura (se ordinaria)</label>
         <div class="input-wrapper">
             <select id="b8" class="input-yellow" onchange="calcola()">
                 <option value="Negligenza" selected>Negligenza</option>
@@ -152,7 +152,7 @@
     </div>
 
     <!-- SEZIONE 2 -->
-    <h2>2. CALCOLO AUTOMATICO TRIBUTI</h2>
+    <h2>2. CALCOLO DEI TRIBUTI</h2>
     <div class="table-responsive">
         <table>
             <colgroup>
@@ -185,7 +185,7 @@
     </div>
 
     <!-- SEZIONE 3 -->
-    <h2>3. DETTAGLIO VERDETTO E SANZIONI</h2>
+    <h2>3. DETTAGLIO</h2>
     <div class="table-responsive">
         <table>
             <colgroup>
@@ -197,20 +197,20 @@
             <thead>
                 <tr>
                     <th>Tipo Procedura / Scenario</th>
-                    <th class="text-right">Sanzione / Multa</th>
+                    <th class="text-right">Sanzione</th>
                     <th class="text-right">Spese / Tassa (CHF)</th>
                     <th class="text-right">Totale (CHF)</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>Procedura Semplificata (Se il contribuente ACCETTA)</td>
+                    <td>Procedura Semplificata</td>
                     <td id="dppa_m" class="text-right"></td>
                     <td id="dppa_t" class="text-right"></td>
                     <td id="dppa_tot" class="text-right fw-bold"></td>
                 </tr>
                 <tr>
-                    <td>Procedura Ordinaria (Se il contribuente RIFIUTA)</td>
+                    <td>Procedura Ordinaria</td>
                     <td id="dppo_m" class="text-right"></td>
                     <td id="dppo_t" class="text-right"></td>
                     <td id="dppo_tot" class="text-right fw-bold"></td>
