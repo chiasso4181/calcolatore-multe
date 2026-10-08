@@ -78,7 +78,7 @@
         }
         .btn-print:hover { background-color: #112d47; }
 
-        @media print {
+       @media print {
             @page { size: A4 portrait; margin: 1.2cm; }
             body { background: #FFF; padding: 0; margin: 0; font-size: 10pt; }
             .container { box-shadow: none; border: none; padding: 0; max-width: 100%; width: 100%; }
@@ -92,9 +92,14 @@
             .input-green { border: 2px solid #27AE60 !important; }
             th { background-color: #E9ECEF !important; }
         }
-       @media print {
-    @page { size: A4 portrait; margin: 0; } /* Margine a 0 per distruggere l'URL del browser */
-    body { background: #FFF; padding: 1.2cm; margin: 0; font-size: 10pt; } /* Spostiamo lo spazio vitale qui */
+        @media (max-width: 600px) {
+            .form-row { flex-direction: column; align-items: stretch; }
+            .form-row label { margin-bottom: 5px; }
+            .input-wrapper { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
 
 <div class="container">
     <h1>Trattamento veicoli Casi D13 1.2.18</h1>
