@@ -59,6 +59,10 @@
             width: 100%; padding: 10px; border: 1px solid var(--yellow-border);
             border-radius: 4px; font-size: 1rem; font-family: inherit; box-sizing: border-box;
         }
+
+        /* Colore del testo d'esempio in grigio */
+        ::placeholder { color: #A0A0A0; font-weight: normal; }
+
         .input-yellow { background-color: var(--yellow-bg) !important; font-weight: bold; color: #000; }
         .input-yellow:focus { outline: none; box-shadow: 0 0 0 3px rgba(214, 182, 86, 0.3); }
         
@@ -122,30 +126,30 @@
     <h1>Trattamento veicoli Casi D13 1.2.18</h1>
 
     <!-- SEZIONE 1 -->
-    <h2>1. DATI DEL CONTRIBUENTE E VEICOLO</h2>
+    <h2>1. DATI DEL VEICOLO</h2>
     <div class="form-row">
         <label>Valore da euro tax</label>
         <div class="input-wrapper">
-            <input type="text" inputmode="decimal" id="eurotax" class="input-yellow text-right" value="40000.00" autocomplete="off" autocorrect="off" spellcheck="false" oninput="pulisciInput(this); calcDaEurotax()">
+            <input type="text" inputmode="decimal" id="eurotax" class="input-yellow text-right" placeholder="es. 40000.00" value="" autocomplete="off" autocorrect="off" spellcheck="false" oninput="pulisciInput(this); calcDaEurotax()">
         </div>
     </div>
     <div class="form-row">
         <label>Valore dell'autoveicolo (CHF) <br><small>(IVA e ImpAuto scorporata)</small></label>
         <div class="input-wrapper">
-            <input type="text" inputmode="decimal" id="b4" class="input-yellow text-right" value="35579.59" autocomplete="off" autocorrect="off" spellcheck="false" oninput="pulisciInput(this); calcDaB4()">
+            <input type="text" inputmode="decimal" id="b4" class="input-yellow text-right" placeholder="es. 35579.59" value="" autocomplete="off" autocorrect="off" spellcheck="false" oninput="pulisciInput(this); calcDaB4()">
         </div>
     </div>
     <div class="form-row">
         <label>Aliquota Imposta Autoveicoli</label>
         <div class="input-wrapper">
-            <input type="text" inputmode="decimal" id="b5" class="input-yellow text-right has-percent" value="4.0" autocomplete="off" autocorrect="off" spellcheck="false" oninput="pulisciInput(this); calcola()">
+            <input type="text" inputmode="decimal" id="b5" class="input-yellow text-right has-percent" placeholder="es. 4.0" value="4.0" autocomplete="off" autocorrect="off" spellcheck="false" oninput="pulisciInput(this); calcola()">
             <span class="percent-sign">%</span>
         </div>
     </div>
     <div class="form-row">
         <label>Aliquota IVA</label>
         <div class="input-wrapper">
-            <input type="text" inputmode="decimal" id="b6" class="input-yellow text-right has-percent" value="8.10" autocomplete="off" autocorrect="off" spellcheck="false" oninput="pulisciInput(this); calcola()">
+            <input type="text" inputmode="decimal" id="b6" class="input-yellow text-right has-percent" placeholder="es. 8.10" value="8.10" autocomplete="off" autocorrect="off" spellcheck="false" oninput="pulisciInput(this); calcola()">
             <span class="percent-sign">%</span>
         </div>
     </div>
@@ -183,7 +187,7 @@
             <tr>
                 <td>Altre tasse 13.20A</td>
                 <td class="text-right" style="padding: 6px 12px; background: #FFF;">
-                    <input type="text" inputmode="decimal" id="b12" class="input-green" value="20.00" autocomplete="off" autocorrect="off" spellcheck="false" oninput="pulisciInput(this); calcola()">
+                    <input type="text" inputmode="decimal" id="b12" class="input-green" placeholder="es. 20.00" value="20.00" autocomplete="off" autocorrect="off" spellcheck="false" oninput="pulisciInput(this); calcola()">
                 </td>
             </tr>
             <tr>
@@ -309,11 +313,12 @@
         }
     }
 
-    function leggiNumeroSafe(idCampo) {
+    function leggiNumeroSafe(idCampo, valoreDiDefault = 0) {
         let campo = document.getElementById(idCampo);
-        if (!campo || !campo.value) return 0;
+        if (!campo || campo.value.trim() === '') return valoreDiDefault;
+        
         let numero = parseFloat(campo.value);
-        return isNaN(numero) ? 0 : numero;
+        return isNaN(numero) ? valoreDiDefault : numero;
     }
 
     function formatCHF(val) {
@@ -333,31 +338,52 @@
     }
 
     function calcDaEurotax() {
-        let euro = leggiNumeroSafe("eurotax");
+        let euro = leggiNumeroSafe("eurotax", 0);
         if (euro > 0) {
             let netto = euro / 1.12424; 
             document.getElementById("b4").value = netto.toFixed(2);
             calcola(); 
+        } else {
+            calcola();
         }
     }
     
     function calcDaB4() {
-        let netto = leggiNumeroSafe("b4");
+        let netto = leggiNumeroSafe("b4", 0);
         if (netto > 0) {
             let lordo = netto * 1.12424;
             document.getElementById("eurotax").value = lordo.toFixed(2);
+            calcola();
+        } else {
             calcola();
         }
     }
 
     function calcola() {
-        let b4 = leggiNumeroSafe("b4");
-        let b5 = leggiNumeroSafe("b5") / 100;
-        let b6 = leggiNumeroSafe("b6") / 100;
-        let b12 = leggiNumeroSafe("b12");
+        let b4 = leggiNumeroSafe("b4", 0);
+        let b5 = leggiNumeroSafe("b5", 4.0) / 100;
+        let b6 = leggiNumeroSafe("b6", 8.10) / 100;
+        let b12 = leggiNumeroSafe("b12", 20.00);
         
         let b7 = document.getElementById("b7").value; 
         let b8 = document.getElementById("b8").value; 
+
+        if (b4 === 0) {
+            document.getElementById("out_imposta").innerText = "0.00";
+            document.getElementById("out_base").innerText = "0.00";
+            document.getElementById("out_iva").innerText = "0.00";
+            document.getElementById("out_totale").innerText = "0.00";
+            document.getElementById("dppa_m").innerText = "0.00";
+            document.getElementById("dppa_t").innerText = "0.00";
+            document.getElementById("dppa_tot").innerText = "0.00";
+            document.getElementById("dppo_m").innerText = "0.00";
+            document.getElementById("dppo_t").innerText = "0.00";
+            document.getElementById("dppo_tot").innerText = "0.00";
+            document.getElementById("final_m").innerText = "0.00";
+            document.getElementById("final_t").innerText = "0.00";
+            document.getElementById("final_tot").innerText = "0.00";
+            return; 
+        }
 
         let base_imposta = b4 + b12; 
         let imposta = round5Rappen(base_imposta * b5);
